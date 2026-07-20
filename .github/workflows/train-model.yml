@@ -1,0 +1,143 @@
+name: Automated Model Training & Deployment
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  train-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.12.7
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12.7'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run preprocessing
+      run: |
+        cd preprocessing
+        python automate_Mirza_Zulfadhli_Amin.py
+    
+    - name: Train model
+      run: |
+        cd Membangun_model
+        python modelling.py
+
+    - name: Run hyperparameter tuning
+      run: |
+        cd Membangun_model
+        python modelling_tuning.py
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: model-artifacts
+        path: |
+          Membangun_model/*.png
+          Membangun_model/*.json
+          Membangun_model/*.pkl
+          Membangun_model/DagsHub_link.txt
+    
+    - name: Deploy to Hugging Face
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        pip install huggingface-hub
+        huggingface-cli login --token $HF_TOKEN
+        
+        # Buat folder untuk model
+        mkdir -p model_deploy
+        
+        # Copy model files
+        cp Membangun_model/*.pkl model_deploy/
+        cp Membangun_model/*.json model_deploy/
+        
+        # Buat README untuk Hugging Face
+        cat > model_deploy/README.md << EOF
+        ---
+        license: mit
+        ---
+        # Churn Prediction Model
+        Model untuk memprediksi churn pelanggan.
+        
+        ## Metrics
+        $(cat Membangun_model/metric_info_*.json 2>/dev/null || echo "No metrics")
+        EOF
+        
+        # Upload ke Hugging Face
+        huggingface-cli upload ${{ secrets.HF_USERNAME }}/churn-model model_deploy/ --repo-type model
+        
+        echo "Model deployed to Hugging Face!"
+    
+    - name: Create HTML Report
+      run: |
+        mkdir -p reports
+        cat > reports/index.html << EOF
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Model Training Report</title>
+          <style>
+            body { font-family: Arial; margin: 40px; }
+            .metric { display: inline-block; margin: 20px; padding: 20px; background: #f0f0f0; border-radius: 10px; }
+            .value { font-size: 24px; font-weight: bold; color: #2c3e50; }
+          </style>
+        </head>
+        <body>
+          <h1>Model Training Report</h1>
+          <p>Generated: $(date)</p>
+          <h2>Metrics Summary</h2>
+          <pre>$(cat Membangun_model/metric_info_*.json 2>/dev/null || echo "No metrics")</pre>
+          <h2>Confusion Matrix</h2>
+          <img src="data:image/png;base64,$(base64 -w0 Membangun_model/training_confusion_matrix_*.png 2>/dev/null || echo '')" />
+          <h2>DagsHub Link</h2>
+          <p><a href="$(cat Membangun_model/DagsHub_link.txt 2>/dev/null || echo '#')">View in DagsHub</a></p>
+        </body>
+        </html>
+        EOF
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./reports
+        publish_branch: gh-pages
+        destination_dir: model-report
+        keep_files: false
+
+    - name: Post comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const metrics = fs.readFileSync('Membangun_model/metric_info_*.json', 'utf8');
+          const comment = `## Model Training Complete!
+          
+          **Metrics Summary:**
+          \`\`\`json
+          ${metrics}
+          \`\`\`
+          
+          **Artifacts:** [Download](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          **Report:** https://${{ github.repository_owner }}.github.io/Workflow-CI-Mirza/model-report/`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
