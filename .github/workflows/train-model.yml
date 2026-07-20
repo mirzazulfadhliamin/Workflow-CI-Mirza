@@ -14,37 +14,35 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
+    
     - name: Set up Python 3.12.7
       uses: actions/setup-python@v5
       with:
         python-version: '3.12.7'
         cache: 'pip'
-
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
+    
     - name: Clone Eksperimen_SML repository
       run: |
-        git clone https://github.com/mirzazulfadhli/Eksperimen_SML_Mirza_Zulfadhli_Amin.git
+        git clone https://github.com/mirzazulfadhliamin/Eksperimen_SML_Mirza_Zulfadhli_Amin.git
         echo "Eksperimen_SML repository cloned"
-
+    
     - name: Run preprocessing
       run: |
         cd Eksperimen_SML_Mirza_Zulfadhli_Amin/preprocessing
         python automate_Mirza_Zulfadhli_Amin.py
         echo "Preprocessing completed"
     
-   
     - name: Train model
       run: |
         cd scripts
         python train.py
         echo "Model training completed"
     
-
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -54,12 +52,12 @@ jobs:
           scripts/*.json
           scripts/*.png
         retention-days: 30
-
+    
     - name: Print summary
       run: |
         echo "========================================="
         echo "WORKFLOW SELESAI!"
         echo "========================================="
-        echo "Artifacts:"
+        echo "Artifacts generated:"
         ls -la scripts/*.pkl scripts/*.json scripts/*.png 2>/dev/null || echo "No artifacts found"
         echo "========================================="
