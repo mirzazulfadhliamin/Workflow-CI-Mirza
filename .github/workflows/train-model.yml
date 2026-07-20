@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:  # Bisa dijalankan manual
+  workflow_dispatch: 
 
 jobs:
   train:
@@ -28,7 +28,7 @@ jobs:
 
     - name: Clone Eksperimen_SML repository
       run: |
-        git clone https://github.com/mirzazulfadhli99/Eksperimen_SML_Mirza_Zulfadhli_Amin.git
+        git clone https://github.com/mirzazulfadhli/Eksperimen_SML_Mirza_Zulfadhli_Amin.git
         echo "Eksperimen_SML repository cloned"
 
     - name: Run preprocessing
