@@ -33,7 +33,7 @@ jobs:
 
     - name: Retrain model with MLflow
       run: |
-        mlflow run . -P data_path=Eksperimen_SML_Mirza_Zulfadhli_Amin/preprocessing/customer_churn_preprocessing.csv
+        mlflow run . -P data_path=Eksperimen_SML_Mirza_Zulfadhli_Amin/preprocessing/customer_churn_preprocessing.csv --no-conda
       env:
         MLFLOW_TRACKING_URI: ${{ github.workspace }}/mlruns
 
