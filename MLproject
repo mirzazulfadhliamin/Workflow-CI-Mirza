@@ -1,0 +1,9 @@
+name: retraining_project
+
+conda_env: null
+
+entry_points:
+  main:
+    command: "python scripts/train.py --data-path {data_path}"
+    parameters:
+      data_path: {type: str, default: "Eksperimen_SML_Mirza_Zulfadhli_Amin/preprocessing/customer_churn_preprocessing.csv"}
