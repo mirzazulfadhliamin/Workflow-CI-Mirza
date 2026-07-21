@@ -1,9 +1,12 @@
 name: retraining_project
 
-conda_env: null
+python_env: python_env.yaml
 
 entry_points:
   main:
-    command: "python scripts/train.py --data-path {data_path}"
     parameters:
-      data_path: {type: str, default: "Eksperimen_SML_Mirza_Zulfadhli_Amin/preprocessing/customer_churn_preprocessing.csv"}
+      data_path:
+        type: str
+        default: Eksperimen_SML_Mirza_Zulfadhli_Amin/preprocessing/customer_churn_preprocessing.csv
+    command: >
+      python scripts/train.py --data-path {data_path}
