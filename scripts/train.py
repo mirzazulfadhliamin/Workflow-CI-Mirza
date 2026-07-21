@@ -13,7 +13,6 @@ def main():
     print("=" * 60)
     print("TRAINING MODEL - GITHUB ACTIONS")
     print("=" * 60)
-    
     print("\nLoading data...")
     
     data_path = '../Eksperimen_SML_Mirza_Zulfadhli_Amin/preprocessing/customer_churn_preprocessing.csv'
