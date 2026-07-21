@@ -122,10 +122,18 @@ def main():
 
     print("\nStarting MLflow tracking...")
     mlflow.set_tracking_uri(f"file://{os.path.abspath('mlruns')}")
-    mlflow.set_experiment('retraining_experiment')
     mlflow.autolog(log_models=False, silent=True)
 
-    with mlflow.start_run() as run:
+    active_run = mlflow.active_run()
+    if active_run is None:
+        mlflow.set_experiment('retraining_experiment')
+        run_ctx = mlflow.start_run()
+        started_run = True
+    else:
+        run_ctx = active_run
+        started_run = False
+
+    try:
         mlflow.log_param('data_path', args.data_path)
         mlflow.log_param('n_estimators', 100)
         mlflow.log_param('max_depth', 10)
@@ -156,7 +164,10 @@ def main():
         mlflow.log_artifact('confusion_matrix.png')
         mlflow.log_artifact('feature_importance.png')
 
-        print("\nMLflow run id:", run.info.run_id)
+        print("\nMLflow run id:", run_ctx.info.run_id)
+    finally:
+        if started_run:
+            mlflow.end_run()
 
     print("\n" + "=" * 60)
     print("RETRAINING COMPLETE")
