@@ -125,6 +125,11 @@ def main():
     mlflow.autolog(log_models=False, silent=True)
 
     active_run = mlflow.active_run()
+    env_run_id = os.environ.get('MLFLOW_RUN_ID')
+    if env_run_id is not None and active_run is None:
+        mlflow.start_run(run_id=env_run_id)
+        active_run = mlflow.active_run()
+
     if active_run is None:
         mlflow.set_experiment('retraining_experiment')
         run_ctx = mlflow.start_run()
