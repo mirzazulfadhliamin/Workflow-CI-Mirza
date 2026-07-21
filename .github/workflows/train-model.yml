@@ -39,6 +39,8 @@ jobs:
     
     - name: Train model
       run: |
+        pwd
+        ls -R
         cd scripts
         python train.py
         echo "Model training completed"
