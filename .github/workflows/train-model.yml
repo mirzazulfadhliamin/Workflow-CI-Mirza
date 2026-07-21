@@ -33,7 +33,7 @@ jobs:
     
     - name: Run preprocessing
       run: |
-        cd Eksperimen_SML_Mirza_Zulfadhli_Amin/preprocessing
+        cd preprocessing
         python automate_Mirza_Zulfadhli_Amin.py
         echo "Preprocessing completed"
     
